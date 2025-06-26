@@ -45,6 +45,17 @@ const likeAlbum = async (albumWorkoutId, userId, isLike) => {
   }
 };
 
+const findAlbumById = async (albumWorkoutId) => {
+  try {
+    const result = await GET_DB()
+      .collection(albumnWorkoutModal.ALBUM_WORKOUT_COLLECTION_NAME)
+      .findOne({ _id: new ObjectId(albumWorkoutId) });
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 const getAlbumById = async (albumWorkoutId) => {
   try {
     const result = await GET_DB()
@@ -91,6 +102,13 @@ const getAlbumById = async (albumWorkoutId) => {
                   },
                 },
               },
+              {
+                $project: {
+                  _id: 1,
+                  userName: 1,
+                  avatarImg: 1,
+                },
+              },
             ],
             as: "likedUsers",
           },
@@ -109,11 +127,7 @@ const getAlbumById = async (albumWorkoutId) => {
             userName: "$users.userName",
             avatarImg: "$users.avatarImg",
             likeNumber: "$likeNumber",
-            likedUsers: {
-              _id: "$likedUsers._id",
-              userName: "$likedUsers.userName",
-              avatarImg: "$likedUsers.avatarImg",
-            },
+            likedUsers: 1,
           },
         },
       ])
@@ -139,7 +153,9 @@ const countLikeAlbum = async (albumWorkoutId, userId) => {
 };
 
 export const albumLikeModal = {
+  ALBUM_LIKE_COLLECTION_NAME,
   likeAlbum,
   countLikeAlbum,
   getAlbumById,
+  findAlbumById,
 };

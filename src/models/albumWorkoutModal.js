@@ -3,6 +3,7 @@ import { ObjectId } from "mongodb";
 import { GET_DB } from "~/config/mongodb";
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from "~/utils/validators";
 import { userModal } from "./userModal";
+import { albumLikeModal } from "./albumLikeModal";
 
 const ALBUM_WORKOUT_COLLECTION_NAME = "album-workout";
 const ALBUM_WORKOUT_COLLECTION_SCHEMA = Joi.object({
@@ -43,22 +44,124 @@ const createNew = async (reqBody, userId) => {
   }
 };
 
+// const findOneById = async (id) => {
+//   try {
+//     const result = await GET_DB()
+//       .collection(ALBUM_WORKOUT_COLLECTION_NAME)
+//       .aggregate([
+//         {
+//           $match: { _id: new ObjectId(id) },
+//         },
+//         {
+//           $lookup: {
+//             from: userModal.USER_COLLECTION_NAME,
+//             let: { userId: "$userId" },
+//             pipeline: [
+//               {
+//                 $match: {
+//                   $expr: { $eq: ["$_id", "$$userId"] },
+//                 },
+//               },
+//               {
+//                 $project: {
+//                   _id: 1,
+//                   userName: 1,
+//                   avatarImg: 1,
+//                 },
+//               },
+//             ],
+//             as: "user",
+//           },
+//         },
+//         { $unwind: "$user" },
+//       ])
+//       .toArray();
+//     return result[0];
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// };
+
+// const getAll = async () => {
+//   try {
+//     const result = await GET_DB()
+//       .collection(ALBUM_WORKOUT_COLLECTION_NAME)
+//       .aggregate([
+//         {
+//           $lookup: {
+//             from: userModal.USER_COLLECTION_NAME,
+//             let: { userId: "$userId" },
+//             pipeline: [
+//               {
+//                 $match: {
+//                   $expr: { $eq: ["$_id", "$$userId"] },
+//                 },
+//               },
+//               {
+//                 $project: {
+//                   _id: 1,
+//                   userName: 1,
+//                   avatarImg: 1,
+//                 },
+//               },
+//             ],
+//             as: "user",
+//           },
+//         },
+//         { $unwind: "$user" },
+//       ])
+//       .toArray();
+
+//     return result;
+//   } catch (error) {
+//     throw new Error(error);
+//   }
+// };
+
 const findOneById = async (id) => {
   try {
     const result = await GET_DB()
       .collection(ALBUM_WORKOUT_COLLECTION_NAME)
       .aggregate([
+        { $match: { _id: new ObjectId(id) } },
         {
-          $match: { _id: new ObjectId(id) },
+          $lookup: {
+            from: albumLikeModal.ALBUM_LIKE_COLLECTION_NAME,
+            localField: "_id",
+            foreignField: "albumWorkoutId",
+            as: "likes",
+          },
         },
+
+        {
+          $addFields: {
+            likeNumber: { $size: "$likes" },
+          },
+        },
+
         {
           $lookup: {
             from: userModal.USER_COLLECTION_NAME,
-            let: { userId: "$userId" },
+            localField: "userId",
+            foreignField: "_id",
+            as: "users",
+          },
+        },
+
+        {
+          $unwind: "$users",
+        },
+
+        {
+          $lookup: {
+            from: userModal.USER_COLLECTION_NAME,
+            let: { likeUserIds: "$likes.userId" },
             pipeline: [
               {
                 $match: {
-                  $expr: { $eq: ["$_id", "$$userId"] },
+                  $expr: {
+                    $in: ["$_id", "$$likeUserIds"],
+                  },
                 },
               },
               {
@@ -69,10 +172,26 @@ const findOneById = async (id) => {
                 },
               },
             ],
-            as: "user",
+            as: "likedUsers",
           },
         },
-        { $unwind: "$user" },
+
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            imgURL: 1,
+            description: 1,
+            status: 1,
+            imgPublicId: 1,
+            userId: 1,
+            createdAt: 1,
+            userName: "$users.userName",
+            avatarImg: "$users.avatarImg",
+            likeNumber: "$likeNumber",
+            likedUsers: 1,
+          },
+        },
       ])
       .toArray();
     return result[0];
@@ -86,14 +205,45 @@ const getAll = async () => {
     const result = await GET_DB()
       .collection(ALBUM_WORKOUT_COLLECTION_NAME)
       .aggregate([
+        // { $match: {} },
+        {
+          $lookup: {
+            from: albumLikeModal.ALBUM_LIKE_COLLECTION_NAME,
+            localField: "_id",
+            foreignField: "albumWorkoutId",
+            as: "likes",
+          },
+        },
+
+        {
+          $addFields: {
+            likeNumber: { $size: "$likes" },
+          },
+        },
+
         {
           $lookup: {
             from: userModal.USER_COLLECTION_NAME,
-            let: { userId: "$userId" },
+            localField: "userId",
+            foreignField: "_id",
+            as: "users",
+          },
+        },
+
+        {
+          $unwind: "$users",
+        },
+
+        {
+          $lookup: {
+            from: userModal.USER_COLLECTION_NAME,
+            let: { likeUserIds: "$likes.userId" },
             pipeline: [
               {
                 $match: {
-                  $expr: { $eq: ["$_id", "$$userId"] },
+                  $expr: {
+                    $in: ["$_id", "$$likeUserIds"],
+                  },
                 },
               },
               {
@@ -104,13 +254,36 @@ const getAll = async () => {
                 },
               },
             ],
-            as: "user",
+            as: "likedUsers",
           },
         },
-        { $unwind: "$user" },
+
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            imgURL: 1,
+            description: 1,
+            status: 1,
+            imgPublicId: 1,
+            userId: 1,
+            createdAt: 1,
+            userName: "$users.userName",
+            avatarImg: "$users.avatarImg",
+            likeNumber: "$likeNumber",
+            // likedUsers: [
+            //   {
+            //     _id: "$likedUsers._id",
+            //     userName: "$likedUsers.userName",
+            //     avatarImg: "$likedUsers.avatarImg",
+            //   },
+            // ],
+            likedUsers: 1,
+          },
+        },
+        { $sort: { createdAt: -1 } },
       ])
       .toArray();
-
     return result;
   } catch (error) {
     throw new Error(error);
@@ -141,6 +314,9 @@ const deleteAlbum = async (id) => {
     const result = await GET_DB()
       .collection(ALBUM_WORKOUT_COLLECTION_NAME)
       .findOneAndDelete({ _id: new ObjectId(id) });
+    await GET_DB()
+      .collection(albumLikeModal.ALBUM_LIKE_COLLECTION_NAME)
+      .deleteMany({ albumWorkoutId: new ObjectId(id) });
     return result;
   } catch (error) {
     throw new Error(error);
