@@ -20,11 +20,17 @@ Route.route("/:id")
   .delete(
     albumWorkoutValidation.deleteAlbum,
     albumWorkoutController.deleteAlbum
-  );
+  )
+  .get(albumWorkoutValidation.getAlbum, albumWorkoutController.getAlbum);
 
 Route.route("/like/:id").post(
   albumLikeValidation.likeAlbum,
   albumLikeController.likeAlbum
+);
+
+Route.route("/:id/details").put(
+  albumWorkoutValidation.updateDetails,
+  albumWorkoutController.updateDetails
 );
 
 export const albumWorkoutRoute = Route;

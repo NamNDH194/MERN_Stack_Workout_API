@@ -122,6 +122,7 @@ const getAlbumById = async (albumWorkoutId) => {
             description: 1,
             status: 1,
             imgPublicId: 1,
+            details: 1,
             userId: 1,
             createdAt: 1,
             userName: "$users.userName",

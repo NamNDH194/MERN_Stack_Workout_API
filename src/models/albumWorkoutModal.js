@@ -9,9 +9,10 @@ const ALBUM_WORKOUT_COLLECTION_NAME = "album-workout";
 const ALBUM_WORKOUT_COLLECTION_SCHEMA = Joi.object({
   title: Joi.string().required().min(1).max(50).trim().strict(),
   imgURL: Joi.string().required().min(1).trim().strict(),
-  description: Joi.string().required().min(1).max(50).trim().strict(),
+  description: Joi.string().required().min(1).trim().strict(),
   status: Joi.string().valid("Public", "Private"),
   imgPublicId: Joi.string().required().min(1),
+  details: Joi.object(),
   userId: Joi.string()
     .required()
     .pattern(OBJECT_ID_RULE)
@@ -184,6 +185,7 @@ const findOneById = async (id) => {
             description: 1,
             status: 1,
             imgPublicId: 1,
+            details: 1,
             userId: 1,
             createdAt: 1,
             userName: "$users.userName",
@@ -266,6 +268,7 @@ const getAll = async () => {
             description: 1,
             status: 1,
             imgPublicId: 1,
+            details: 1,
             userId: 1,
             createdAt: 1,
             userName: "$users.userName",
@@ -323,36 +326,20 @@ const deleteAlbum = async (id) => {
   }
 };
 
-// const likeAlbum = async (id, status, userId) => {
-//   try {
-//     if (status === "increase") {
-//       const result = await GET_DB()
-//         .collection(ALBUM_WORKOUT_COLLECTION_NAME)
-//         .updateOne(
-//           { _id: new ObjectId(id) },
-//           {
-//             $inc: { likeNumber: 1 },
-//             $push: { likedUserIds: new ObjectId(userId) },
-//           }
-//         );
-//       return result;
-//     }
-//     if (status === "decrease") {
-//       const result = await GET_DB()
-//         .collection(ALBUM_WORKOUT_COLLECTION_NAME)
-//         .updateOne(
-//           { _id: new ObjectId(id) },
-//           {
-//             $inc: { likeNumber: -1 },
-//             $pull: { likedUserIds: new ObjectId(userId) },
-//           }
-//         );
-//       return result;
-//     }
-//   } catch (error) {
-//     throw new Error(error);
-//   }
-// };
+const updateDetails = async (id, details) => {
+  try {
+    const result = await GET_DB()
+      .collection(ALBUM_WORKOUT_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(id) },
+        { $set: { details: details } },
+        { returnDocument: "after" }
+      );
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
 
 export const albumnWorkoutModal = {
   ALBUM_WORKOUT_COLLECTION_NAME,
@@ -361,5 +348,5 @@ export const albumnWorkoutModal = {
   getAll,
   updateAlbum,
   deleteAlbum,
-  // likeAlbum,
+  updateDetails,
 };

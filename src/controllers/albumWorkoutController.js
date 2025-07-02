@@ -77,18 +77,26 @@ const deleteAlbum = async (req, res, next) => {
   }
 };
 
-// const likeAlbum = async (req, res, next) => {
-//   try {
-//     const result = await albumnWorkoutService.likeAlbum(
-//       req.params.id,
-//       req.body.status,
-//       req.userId
-//     );
-//     res.status(StatusCodes.OK).json(result);
-//   } catch (error) {
-//     next(error);
-//   }
-// };
+const getAlbum = async (req, res, next) => {
+  try {
+    const albumWorkout = await albumnWorkoutService.getAlbum(req.params.id);
+    res.status(StatusCodes.OK).json(albumWorkout);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateDetails = async (req, res, next) => {
+  try {
+    const albumWorkout = await albumnWorkoutService.updateDetails(
+      req.params.id,
+      req.body
+    );
+    res.status(StatusCodes.OK).json(albumWorkout);
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const albumWorkoutController = {
   generateSignature,
@@ -96,5 +104,6 @@ export const albumWorkoutController = {
   getAll,
   updateAlbum,
   deleteAlbum,
-  // likeAlbum,
+  getAlbum,
+  updateDetails,
 };

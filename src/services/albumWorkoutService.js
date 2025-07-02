@@ -45,20 +45,33 @@ const deleteAlbum = async (id, imgPublicId) => {
   }
 };
 
-// const likeAlbum = async (id, status, userId) => {
-//   try {
-//     await albumnWorkoutModal.likeAlbum(id, status, userId);
-//     const albumWorkout = await albumnWorkoutModal.findOneById(id);
-//     return albumWorkout;
-//   } catch (error) {
-//     throw new Error(error);
-//   }
-// };
+const getAlbum = async (id) => {
+  try {
+    const albumWorkout = await albumnWorkoutModal.findOneById(id);
+    if (albumWorkout.status === "Private") {
+      throw new Error("This album is not exist or private!");
+    }
+    return albumWorkout;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const updateDetails = async (id, details) => {
+  try {
+    const data = await albumnWorkoutModal.updateDetails(id, details);
+    const albumWorkout = await albumnWorkoutModal.findOneById(data._id);
+    return albumWorkout;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
 
 export const albumnWorkoutService = {
   createNew,
   getAll,
   updateAlbum,
   deleteAlbum,
-  // likeAlbum,
+  getAlbum,
+  updateDetails,
 };
