@@ -13,6 +13,30 @@ const createNew = async (req, res, next) => {
   }
 };
 
+const getAll = async (req, res, next) => {
+  try {
+    const albumContents = await albumContentService.getAll(req.params.id);
+    res.status(StatusCodes.OK).json(albumContents);
+  } catch (error) {
+    next(error);
+  }
+};
+
+const updateAlbumContent = async (req, res, next) => {
+  try {
+    delete req.body.id;
+    const albumContentUpdated = await albumContentService.updateAlbumContent(
+      req.body,
+      req.params.id
+    );
+    res.status(StatusCodes.OK).json(albumContentUpdated);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const albumContentController = {
   createNew,
+  getAll,
+  updateAlbumContent,
 };

@@ -6,9 +6,12 @@ import { albumContentValidation } from "~/validations/albumContentValidation";
 const Route = express.Router();
 
 Route.use(authMiddleware);
-Route.route("/:id").post(
-  albumContentValidation.createNew,
-  albumContentController.createNew
-);
+Route.route("/:id")
+  .post(albumContentValidation.createNew, albumContentController.createNew)
+  .get(albumContentController.getAll)
+  .put(
+    albumContentValidation.updateAlbumContent,
+    albumContentController.updateAlbumContent
+  );
 
 export const albumContentRoute = Route;
