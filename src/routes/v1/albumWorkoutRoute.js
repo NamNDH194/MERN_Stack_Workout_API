@@ -13,7 +13,7 @@ Route.route("/sign-upload").post(albumWorkoutController.generateSignature);
 
 Route.route("/")
   .post(albumWorkoutValidation.createNew, albumWorkoutController.createNew)
-  .get(albumWorkoutController.getAll);
+  .get(albumWorkoutController.getAllPublic);
 
 Route.route("/:id")
   .put(albumWorkoutValidation.updateAlbum, albumWorkoutController.updateAlbum)

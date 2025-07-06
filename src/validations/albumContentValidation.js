@@ -51,7 +51,24 @@ const updateAlbumContent = async (req, res, next) => {
   }
 };
 
+const deleteAlbumContent = async (req, res, next) => {
+  try {
+    const condition = Joi.object({
+      id: Joi.string()
+        .required()
+        .pattern(OBJECT_ID_RULE)
+        .message(OBJECT_ID_RULE_MESSAGE),
+    });
+    await condition.validateAsync(req.params);
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const albumContentValidation = {
   createNew,
   updateAlbumContent,
+  deleteAlbumContent,
 };

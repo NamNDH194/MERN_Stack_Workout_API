@@ -18,7 +18,7 @@ const signup = async (reqBody) => {
       const account = await userModal.findOneById(data.insertedId);
       const token = createToken(account._id);
       return {
-        userId: account._id,
+        // userId: account._id,
         email: account.email,
         userName: account.userName,
         token: token,
@@ -34,7 +34,7 @@ const login = async (reqBody) => {
     const account = await userModal.findAccount(reqBody);
     const token = createToken(account._id);
     return {
-      userId: account._id,
+      // userId: account._id,
       email: account.email,
       userName: account.userName,
       token: token,

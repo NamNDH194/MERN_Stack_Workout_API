@@ -202,12 +202,16 @@ const findOneById = async (id) => {
   }
 };
 
-const getAll = async () => {
+const getAllPublic = async () => {
   try {
     const result = await GET_DB()
       .collection(ALBUM_WORKOUT_COLLECTION_NAME)
       .aggregate([
-        // { $match: {} },
+        {
+          $match: {
+            status: "Public",
+          },
+        },
         {
           $lookup: {
             from: albumLikeModal.ALBUM_LIKE_COLLECTION_NAME,
@@ -345,7 +349,7 @@ export const albumnWorkoutModal = {
   ALBUM_WORKOUT_COLLECTION_NAME,
   createNew,
   findOneById,
-  getAll,
+  getAllPublic,
   updateAlbum,
   deleteAlbum,
   updateDetails,

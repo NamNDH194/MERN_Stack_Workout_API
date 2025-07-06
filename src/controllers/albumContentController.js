@@ -35,8 +35,18 @@ const updateAlbumContent = async (req, res, next) => {
   }
 };
 
+const deleteAlbumContent = async (req, res, next) => {
+  try {
+    const result = await albumContentService.deleteAlbumContent(req.params.id);
+    res.status(StatusCodes.OK).json(result);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const albumContentController = {
   createNew,
   getAll,
   updateAlbumContent,
+  deleteAlbumContent,
 };

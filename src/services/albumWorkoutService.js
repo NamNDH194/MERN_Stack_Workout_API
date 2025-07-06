@@ -13,9 +13,9 @@ const createNew = async (reqBody, userId) => {
   }
 };
 
-const getAll = async () => {
+const getAllPublic = async () => {
   try {
-    const albumWorkouts = await albumnWorkoutModal.getAll();
+    const albumWorkouts = await albumnWorkoutModal.getAllPublic();
     return albumWorkouts;
   } catch (error) {
     throw new Error(error);
@@ -69,7 +69,7 @@ const updateDetails = async (id, details) => {
 
 export const albumnWorkoutService = {
   createNew,
-  getAll,
+  getAllPublic,
   updateAlbum,
   deleteAlbum,
   getAlbum,

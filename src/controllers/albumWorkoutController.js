@@ -44,9 +44,9 @@ const createNew = async (req, res, next) => {
   }
 };
 
-const getAll = async (req, res, next) => {
+const getAllPublic = async (req, res, next) => {
   try {
-    const albumWorkouts = await albumnWorkoutService.getAll();
+    const albumWorkouts = await albumnWorkoutService.getAllPublic();
     res.status(StatusCodes.OK).json(albumWorkouts);
   } catch (error) {
     next(error);
@@ -101,7 +101,7 @@ const updateDetails = async (req, res, next) => {
 export const albumWorkoutController = {
   generateSignature,
   createNew,
-  getAll,
+  getAllPublic,
   updateAlbum,
   deleteAlbum,
   getAlbum,

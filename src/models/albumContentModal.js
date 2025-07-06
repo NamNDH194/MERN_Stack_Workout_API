@@ -49,7 +49,7 @@ const createNew = async (reqBody, albumWorkoutId) => {
     const exercisesToInsert = exercises.map((item) => ({
       albumContentId: new ObjectId(resultAlbumContent.insertedId),
       ...item,
-      createdAt: Date.now,
+      createdAt: Date.now(),
       updatedAt: null,
     }));
     await GET_DB()
@@ -127,10 +127,25 @@ const updateAlbumContent = async (reqBody, albumContentId) => {
   }
 };
 
+const deleteAlbumContent = async (albumContentId) => {
+  try {
+    const result = await GET_DB()
+      .collection(ALBUM_CONTENT_COLLECTION_NAME)
+      .findOneAndDelete({ _id: new ObjectId(albumContentId) });
+    await GET_DB()
+      .collection(albumExerciseModal.ALBUM_EXERCISE_COLLECTION_NAME)
+      .deleteMany({ albumContentId: new ObjectId(albumContentId) });
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export const albumContentModal = {
   findAlbumWorkoutById,
   createNew,
   findOneById,
   getAll,
   updateAlbumContent,
+  deleteAlbumContent,
 };

@@ -12,6 +12,10 @@ Route.route("/:id")
   .put(
     albumContentValidation.updateAlbumContent,
     albumContentController.updateAlbumContent
+  )
+  .delete(
+    albumContentValidation.deleteAlbumContent,
+    albumContentController.deleteAlbumContent
   );
 
 export const albumContentRoute = Route;
