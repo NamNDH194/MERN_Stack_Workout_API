@@ -55,9 +55,19 @@ const deleteAlbumContent = async (albumContentId) => {
   }
 };
 
+const getAlbumContent = async (albumContentId) => {
+  try {
+    const result = await albumContentModal.findOneById(albumContentId);
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export const albumContentService = {
   createNew,
   getAll,
   updateAlbumContent,
   deleteAlbumContent,
+  getAlbumContent,
 };

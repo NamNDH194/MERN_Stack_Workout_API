@@ -45,10 +45,13 @@ const deleteAlbum = async (id, imgPublicId) => {
   }
 };
 
-const getAlbum = async (id) => {
+const getAlbum = async (id, userId) => {
   try {
     const albumWorkout = await albumnWorkoutModal.findOneById(id);
-    if (albumWorkout.status === "Private") {
+    if (
+      albumWorkout.status === "Private" &&
+      albumWorkout.userId.toString() !== userId
+    ) {
       throw new Error("This album is not exist or private!");
     }
     return albumWorkout;

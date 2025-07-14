@@ -18,4 +18,9 @@ Route.route("/:id")
     albumContentController.deleteAlbumContent
   );
 
+Route.route("/startWorkout/:id").get(
+  albumContentValidation.getAlbumContent,
+  albumContentController.getAlbumContent
+);
+
 export const albumContentRoute = Route;

@@ -79,7 +79,10 @@ const deleteAlbum = async (req, res, next) => {
 
 const getAlbum = async (req, res, next) => {
   try {
-    const albumWorkout = await albumnWorkoutService.getAlbum(req.params.id);
+    const albumWorkout = await albumnWorkoutService.getAlbum(
+      req.params.id,
+      req.userId
+    );
     res.status(StatusCodes.OK).json(albumWorkout);
   } catch (error) {
     next(error);
