@@ -148,4 +148,5 @@ export const albumContentModal = {
   getAll,
   updateAlbumContent,
   deleteAlbumContent,
+  ALBUM_CONTENT_COLLECTION_NAME,
 };

@@ -5,6 +5,7 @@ import { usersRoute } from "./usersRoute";
 import { albumWorkoutRoute } from "./albumWorkoutRoute";
 import { albumContentRoute } from "./albumContentRoute";
 import { albumExerciseRoute } from "./albumExerciseRoute";
+import { albumStorageRoute } from "./albumStorageRoute";
 
 const Route = express.Router();
 
@@ -17,5 +18,6 @@ Route.use("/user", usersRoute);
 Route.use("/albumWorkout", albumWorkoutRoute);
 Route.use("/albumContent", albumContentRoute);
 Route.use("/albumExercise", albumExerciseRoute);
+Route.use("/albumStorage", albumStorageRoute);
 
 export const API_V1 = Route;

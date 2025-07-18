@@ -4,10 +4,10 @@ import { GET_DB } from "~/config/mongodb";
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from "~/utils/validators";
 import { albumnWorkoutModal } from "./albumWorkoutModal";
 import { userModal } from "./userModal";
-import { albumStorageModal } from "./albumStorageModal";
+import { albumLikeModal } from "./albumLikeModal";
 
-const ALBUM_LIKE_COLLECTION_NAME = "album-like";
-const ALBUM_LIKE_COLLECTION_SCHEMA = Joi.object({
+const ALBUM_STORAGE_COLLECTION_NAME = "album-storage";
+const ALBUM_STORAGE_COLLECTION_SCHEMA = Joi.object({
   albumWorkoutId: Joi.string()
     .required()
     .pattern(OBJECT_ID_RULE)
@@ -19,22 +19,22 @@ const ALBUM_LIKE_COLLECTION_SCHEMA = Joi.object({
   createdAt: Joi.date().timestamp("javascript").default(Date.now),
 });
 
-const likeAlbum = async (albumWorkoutId, userId, isLike) => {
+const saveAlbum = async (userId, albumWorkoutId, isSave) => {
   try {
-    if (isLike) {
-      const checkedData = await ALBUM_LIKE_COLLECTION_SCHEMA.validateAsync({
+    if (isSave) {
+      const checkedData = await ALBUM_STORAGE_COLLECTION_SCHEMA.validateAsync({
         albumWorkoutId,
         userId,
       });
       checkedData.albumWorkoutId = new ObjectId(checkedData.albumWorkoutId);
       checkedData.userId = new ObjectId(checkedData.userId);
       const result = await GET_DB()
-        .collection(ALBUM_LIKE_COLLECTION_NAME)
+        .collection(ALBUM_STORAGE_COLLECTION_NAME)
         .insertOne(checkedData);
       return result;
     } else {
       const result = await GET_DB()
-        .collection(ALBUM_LIKE_COLLECTION_NAME)
+        .collection(ALBUM_STORAGE_COLLECTION_NAME)
         .findOneAndDelete({
           albumWorkoutId: new ObjectId(albumWorkoutId),
           userId: new ObjectId(userId),
@@ -46,38 +46,70 @@ const likeAlbum = async (albumWorkoutId, userId, isLike) => {
   }
 };
 
-const findAlbumById = async (albumWorkoutId) => {
-  try {
-    const result = await GET_DB()
-      .collection(albumnWorkoutModal.ALBUM_WORKOUT_COLLECTION_NAME)
-      .findOne({ _id: new ObjectId(albumWorkoutId) });
-    return result;
-  } catch (error) {
-    throw new Error(error);
-  }
-};
-
-const getAlbumById = async (albumWorkoutId) => {
+const getAll = async (userId) => {
+  const userObjectId = new ObjectId(userId);
   try {
     const result = await GET_DB()
       .collection(albumnWorkoutModal.ALBUM_WORKOUT_COLLECTION_NAME)
       .aggregate([
-        { $match: { _id: new ObjectId(albumWorkoutId) } },
+        {
+          $match: {
+            $expr: {
+              $or: [
+                { $eq: ["$status", "Public"] },
+                {
+                  $and: [
+                    { $eq: ["$status", "Private"] },
+                    { $eq: ["$userId", userObjectId] },
+                  ],
+                },
+              ],
+            },
+          },
+        },
         {
           $lookup: {
-            from: ALBUM_LIKE_COLLECTION_NAME,
+            from: ALBUM_STORAGE_COLLECTION_NAME,
+            let: { albumWorkoutId: "$_id" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $and: [
+                      { $eq: ["$albumWorkoutId", "$$albumWorkoutId"] },
+                      { $eq: ["$userId", userObjectId] },
+                    ],
+                  },
+                },
+              },
+            ],
+            as: "matchedStorage",
+          },
+        },
+        {
+          $match: {
+            "matchedStorage.0": { $exists: true },
+          },
+        },
+        {
+          $project: {
+            matchedStorage: 0,
+          },
+        },
+
+        {
+          $lookup: {
+            from: albumLikeModal.ALBUM_LIKE_COLLECTION_NAME,
             localField: "_id",
             foreignField: "albumWorkoutId",
             as: "likes",
           },
         },
-
         {
           $addFields: {
             likeNumber: { $size: "$likes" },
           },
         },
-
         {
           $lookup: {
             from: userModal.USER_COLLECTION_NAME,
@@ -86,11 +118,9 @@ const getAlbumById = async (albumWorkoutId) => {
             as: "users",
           },
         },
-
         {
           $unwind: "$users",
         },
-
         {
           $lookup: {
             from: userModal.USER_COLLECTION_NAME,
@@ -166,32 +196,17 @@ const getAlbumById = async (albumWorkoutId) => {
             storedUsers: 1,
           },
         },
+        { $sort: { createdAt: -1 } },
       ])
       .toArray();
-    return result[0];
-  } catch (error) {
-    throw new Error(error);
-  }
-};
-
-const countLikeAlbum = async (albumWorkoutId, userId) => {
-  try {
-    const result = await GET_DB()
-      .collection(ALBUM_LIKE_COLLECTION_NAME)
-      .count({
-        albumWorkoutId: new ObjectId(albumWorkoutId),
-        userId: new ObjectId(userId),
-      });
     return result;
   } catch (error) {
     throw new Error(error);
   }
 };
 
-export const albumLikeModal = {
-  ALBUM_LIKE_COLLECTION_NAME,
-  likeAlbum,
-  countLikeAlbum,
-  getAlbumById,
-  findAlbumById,
+export const albumStorageModal = {
+  saveAlbum,
+  getAll,
+  ALBUM_STORAGE_COLLECTION_NAME,
 };

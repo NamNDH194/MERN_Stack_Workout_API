@@ -4,6 +4,9 @@ import { GET_DB } from "~/config/mongodb";
 import { OBJECT_ID_RULE, OBJECT_ID_RULE_MESSAGE } from "~/utils/validators";
 import { userModal } from "./userModal";
 import { albumLikeModal } from "./albumLikeModal";
+import { albumStorageModal } from "./albumStorageModal";
+import { albumContentModal } from "./albumContentModal";
+import { albumExerciseModal } from "./albumExerciseModal";
 
 const ALBUM_WORKOUT_COLLECTION_NAME = "album-workout";
 const ALBUM_WORKOUT_COLLECTION_SCHEMA = Joi.object({
@@ -178,6 +181,39 @@ const findOneById = async (id) => {
         },
 
         {
+          $lookup: {
+            from: albumStorageModal.ALBUM_STORAGE_COLLECTION_NAME,
+            localField: "_id",
+            foreignField: "albumWorkoutId",
+            as: "storages",
+          },
+        },
+
+        {
+          $lookup: {
+            from: userModal.USER_COLLECTION_NAME,
+            let: { storeUserIds: "$storages.userId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $in: ["$_id", "$$storeUserIds"],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  userName: 1,
+                  avatarImg: 1,
+                },
+              },
+            ],
+            as: "storedUsers",
+          },
+        },
+
+        {
           $project: {
             _id: 1,
             title: 1,
@@ -192,6 +228,7 @@ const findOneById = async (id) => {
             avatarImg: "$users.avatarImg",
             likeNumber: "$likeNumber",
             likedUsers: 1,
+            storedUsers: 1,
           },
         },
       ])
@@ -265,6 +302,39 @@ const getAllPublic = async () => {
         },
 
         {
+          $lookup: {
+            from: albumStorageModal.ALBUM_STORAGE_COLLECTION_NAME,
+            localField: "_id",
+            foreignField: "albumWorkoutId",
+            as: "storages",
+          },
+        },
+
+        {
+          $lookup: {
+            from: userModal.USER_COLLECTION_NAME,
+            let: { storeUserIds: "$storages.userId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $in: ["$_id", "$$storeUserIds"],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  userName: 1,
+                  avatarImg: 1,
+                },
+              },
+            ],
+            as: "storedUsers",
+          },
+        },
+
+        {
           $project: {
             _id: 1,
             title: 1,
@@ -286,6 +356,7 @@ const getAllPublic = async () => {
             //   },
             // ],
             likedUsers: 1,
+            storedUsers: 1,
           },
         },
         { $sort: { createdAt: -1 } },
@@ -321,9 +392,29 @@ const deleteAlbum = async (id) => {
     const result = await GET_DB()
       .collection(ALBUM_WORKOUT_COLLECTION_NAME)
       .findOneAndDelete({ _id: new ObjectId(id) });
+
     await GET_DB()
       .collection(albumLikeModal.ALBUM_LIKE_COLLECTION_NAME)
       .deleteMany({ albumWorkoutId: new ObjectId(id) });
+
+    await GET_DB()
+      .collection(albumStorageModal.ALBUM_STORAGE_COLLECTION_NAME)
+      .deleteMany({ albumWorkoutId: new ObjectId(id) });
+
+    const contents = await GET_DB()
+      .collection(albumContentModal.ALBUM_CONTENT_COLLECTION_NAME)
+      .find({ albumWorkoutId: new ObjectId(id) })
+      .toArray();
+    const contentIds = contents.map((content) => content._id);
+    await GET_DB()
+      .collection(albumContentModal.ALBUM_CONTENT_COLLECTION_NAME)
+      .deleteMany({ albumWorkoutId: new ObjectId(id) });
+
+    if (contentIds.length > 0) {
+      await GET_DB()
+        .collection(albumExerciseModal.ALBUM_EXERCISE_COLLECTION_NAME)
+        .deleteMany({ albumContentId: { $in: contentIds } });
+    }
     return result;
   } catch (error) {
     throw new Error(error);
