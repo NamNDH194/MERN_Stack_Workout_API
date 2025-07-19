@@ -24,13 +24,17 @@ const updateAlbum = async (req, res, next) => {
       title: Joi.string().optional().max(50).trim().strict(),
       imgURL: Joi.string().optional().trim().strict(),
       description: Joi.string().optional().trim().strict(),
-      status: Joi.string().required().valid("Public", "Private"),
+      // status: Joi.string().required().valid("Public", "Private"),
+      status: Joi.string().valid("Public", "Private").optional().empty(""),
       imgPublicId: Joi.string().optional(),
       oldImgPublicId: Joi.string().optional(),
     });
-    await condition.validateAsync(req.body);
-
-    next();
+    if (Object.keys(condition).length === 0) {
+      throw new Error("Please change at least one filed befor updating!");
+    } else {
+      await condition.validateAsync(req.body);
+      next();
+    }
   } catch (error) {
     next(error);
   }
