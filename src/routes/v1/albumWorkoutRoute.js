@@ -33,4 +33,9 @@ Route.route("/:id/details").put(
   albumWorkoutController.updateDetails
 );
 
+Route.route("/albums-profile/:userIdProfile").get(
+  albumWorkoutValidation.getAlbumProfile,
+  albumWorkoutController.getAlbumProfile
+);
+
 export const albumWorkoutRoute = Route;

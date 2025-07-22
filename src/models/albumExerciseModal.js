@@ -1,5 +1,4 @@
-import Joi from "joi";
-import { ObjectId, ReturnDocument } from "mongodb";
+import { ObjectId } from "mongodb";
 import { GET_DB } from "~/config/mongodb";
 
 const ALBUM_EXERCISE_COLLECTION_NAME = "album-workout-exercises";

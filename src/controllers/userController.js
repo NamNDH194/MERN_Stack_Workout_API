@@ -19,7 +19,17 @@ const login = async (req, res, next) => {
   }
 };
 
+const getUserById = async (req, res, next) => {
+  try {
+    const account = await userService.getUserById(req.params.userId);
+    res.status(StatusCodes.OK).json(account);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const userController = {
   signup,
   login,
+  getUserById,
 };

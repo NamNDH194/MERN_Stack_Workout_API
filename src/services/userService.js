@@ -44,7 +44,17 @@ const login = async (reqBody) => {
   }
 };
 
+const getUserById = async (userId) => {
+  try {
+    const account = await userModal.findOneByIdProfile(userId);
+    return account;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export const userService = {
   signup,
   login,
+  getUserById,
 };

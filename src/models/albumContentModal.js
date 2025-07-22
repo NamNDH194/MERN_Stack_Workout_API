@@ -112,6 +112,7 @@ const getAll = async (albumWorkoutId) => {
 
 const updateAlbumContent = async (reqBody, albumContentId) => {
   try {
+    reqBody.updatedAt = Date.now();
     const result = await GET_DB()
       .collection(ALBUM_CONTENT_COLLECTION_NAME)
       .findOneAndUpdate(

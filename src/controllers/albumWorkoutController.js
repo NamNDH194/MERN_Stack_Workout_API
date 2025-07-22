@@ -101,6 +101,18 @@ const updateDetails = async (req, res, next) => {
   }
 };
 
+const getAlbumProfile = async (req, res, next) => {
+  try {
+    const albumWorkouts = await albumnWorkoutService.getAlbumProfile(
+      req.params.userIdProfile,
+      req.userId
+    );
+    res.status(StatusCodes.OK).json(albumWorkouts);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const albumWorkoutController = {
   generateSignature,
   createNew,
@@ -109,4 +121,5 @@ export const albumWorkoutController = {
   deleteAlbum,
   getAlbum,
   updateDetails,
+  getAlbumProfile,
 };

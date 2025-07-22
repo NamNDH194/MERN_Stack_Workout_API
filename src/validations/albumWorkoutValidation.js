@@ -96,10 +96,35 @@ const updateDetails = async (req, res, next) => {
   }
 };
 
+const getAlbumProfile = async (req, res, next) => {
+  try {
+    const condition = Joi.object({
+      userIdProfile: Joi.string()
+        .required()
+        .pattern(OBJECT_ID_RULE)
+        .message(OBJECT_ID_RULE_MESSAGE),
+      userIdRequest: Joi.string()
+        .required()
+        .pattern(OBJECT_ID_RULE)
+        .message(OBJECT_ID_RULE_MESSAGE),
+    });
+
+    await condition.validateAsync({
+      userIdProfile: req.params.userIdProfile,
+      userIdRequest: req.userId,
+    });
+
+    next();
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const albumWorkoutValidation = {
   createNew,
   updateAlbum,
   deleteAlbum,
   getAlbum,
   updateDetails,
+  getAlbumProfile,
 };

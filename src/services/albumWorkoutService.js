@@ -70,6 +70,25 @@ const updateDetails = async (id, details) => {
   }
 };
 
+const getAlbumProfile = async (userIdProfile, userIdRequest) => {
+  try {
+    if (userIdProfile === userIdRequest) {
+      const albumWorkouts = await albumnWorkoutModal.getAlbumWorkoutsAdmin(
+        userIdRequest
+      );
+      return albumWorkouts;
+    } else {
+      const albumWorkouts =
+        await albumnWorkoutModal.getAllPublicAlbumWorkoutsByUserId(
+          userIdProfile
+        );
+      return albumWorkouts;
+    }
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export const albumnWorkoutService = {
   createNew,
   getAllPublic,
@@ -77,4 +96,5 @@ export const albumnWorkoutService = {
   deleteAlbum,
   getAlbum,
   updateDetails,
+  getAlbumProfile,
 };

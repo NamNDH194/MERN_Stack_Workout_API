@@ -98,10 +98,25 @@ const findOneById = async (id) => {
   }
 };
 
+const findOneByIdProfile = async (id) => {
+  try {
+    const account = await GET_DB()
+      .collection(USER_COLLECTION_NAME)
+      .findOne(
+        { _id: new ObjectId(id) },
+        { projection: { _id: 1, userName: 1, avatarImg: 1, created: 1 } }
+      );
+    return account;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export const userModal = {
   USER_COLLECTION_NAME,
   createNew,
   findOne,
   findAccount,
   findOneById,
+  findOneByIdProfile,
 };

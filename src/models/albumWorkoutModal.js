@@ -436,6 +436,269 @@ const updateDetails = async (id, details) => {
   }
 };
 
+const getAlbumWorkoutsAdmin = async (userIdRequest) => {
+  try {
+    const result = await GET_DB()
+      .collection(ALBUM_WORKOUT_COLLECTION_NAME)
+      .aggregate([
+        {
+          $match: {
+            userId: new ObjectId(userIdRequest),
+          },
+        },
+        {
+          $lookup: {
+            from: albumLikeModal.ALBUM_LIKE_COLLECTION_NAME,
+            localField: "_id",
+            foreignField: "albumWorkoutId",
+            as: "likes",
+          },
+        },
+
+        {
+          $addFields: {
+            likeNumber: { $size: "$likes" },
+          },
+        },
+
+        {
+          $lookup: {
+            from: userModal.USER_COLLECTION_NAME,
+            localField: "userId",
+            foreignField: "_id",
+            as: "users",
+          },
+        },
+
+        {
+          $unwind: "$users",
+        },
+
+        {
+          $lookup: {
+            from: userModal.USER_COLLECTION_NAME,
+            let: { likeUserIds: "$likes.userId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $in: ["$_id", "$$likeUserIds"],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  userName: 1,
+                  avatarImg: 1,
+                },
+              },
+            ],
+            as: "likedUsers",
+          },
+        },
+
+        {
+          $lookup: {
+            from: albumStorageModal.ALBUM_STORAGE_COLLECTION_NAME,
+            localField: "_id",
+            foreignField: "albumWorkoutId",
+            as: "storages",
+          },
+        },
+
+        {
+          $lookup: {
+            from: userModal.USER_COLLECTION_NAME,
+            let: { storeUserIds: "$storages.userId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $in: ["$_id", "$$storeUserIds"],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  userName: 1,
+                  avatarImg: 1,
+                },
+              },
+            ],
+            as: "storedUsers",
+          },
+        },
+
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            imgURL: 1,
+            description: 1,
+            status: 1,
+            imgPublicId: 1,
+            details: 1,
+            userId: 1,
+            createdAt: 1,
+            userName: "$users.userName",
+            avatarImg: "$users.avatarImg",
+            likeNumber: "$likeNumber",
+            // likedUsers: [
+            //   {
+            //     _id: "$likedUsers._id",
+            //     userName: "$likedUsers.userName",
+            //     avatarImg: "$likedUsers.avatarImg",
+            //   },
+            // ],
+            likedUsers: 1,
+            storedUsers: 1,
+          },
+        },
+        { $sort: { createdAt: -1 } },
+      ])
+      .toArray();
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const getAllPublicAlbumWorkoutsByUserId = async (userIdProfile) => {
+  try {
+    const result = await GET_DB()
+      .collection(ALBUM_WORKOUT_COLLECTION_NAME)
+      .aggregate([
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $eq: ["$status", "Public"] },
+                { $eq: ["$userId", new ObjectId(userIdProfile)] },
+              ],
+            },
+          },
+        },
+        {
+          $lookup: {
+            from: albumLikeModal.ALBUM_LIKE_COLLECTION_NAME,
+            localField: "_id",
+            foreignField: "albumWorkoutId",
+            as: "likes",
+          },
+        },
+
+        {
+          $addFields: {
+            likeNumber: { $size: "$likes" },
+          },
+        },
+
+        {
+          $lookup: {
+            from: userModal.USER_COLLECTION_NAME,
+            localField: "userId",
+            foreignField: "_id",
+            as: "users",
+          },
+        },
+
+        {
+          $unwind: "$users",
+        },
+
+        {
+          $lookup: {
+            from: userModal.USER_COLLECTION_NAME,
+            let: { likeUserIds: "$likes.userId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $in: ["$_id", "$$likeUserIds"],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  userName: 1,
+                  avatarImg: 1,
+                },
+              },
+            ],
+            as: "likedUsers",
+          },
+        },
+
+        {
+          $lookup: {
+            from: albumStorageModal.ALBUM_STORAGE_COLLECTION_NAME,
+            localField: "_id",
+            foreignField: "albumWorkoutId",
+            as: "storages",
+          },
+        },
+
+        {
+          $lookup: {
+            from: userModal.USER_COLLECTION_NAME,
+            let: { storeUserIds: "$storages.userId" },
+            pipeline: [
+              {
+                $match: {
+                  $expr: {
+                    $in: ["$_id", "$$storeUserIds"],
+                  },
+                },
+              },
+              {
+                $project: {
+                  _id: 1,
+                  userName: 1,
+                  avatarImg: 1,
+                },
+              },
+            ],
+            as: "storedUsers",
+          },
+        },
+
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            imgURL: 1,
+            description: 1,
+            status: 1,
+            imgPublicId: 1,
+            details: 1,
+            userId: 1,
+            createdAt: 1,
+            userName: "$users.userName",
+            avatarImg: "$users.avatarImg",
+            likeNumber: "$likeNumber",
+            // likedUsers: [
+            //   {
+            //     _id: "$likedUsers._id",
+            //     userName: "$likedUsers.userName",
+            //     avatarImg: "$likedUsers.avatarImg",
+            //   },
+            // ],
+            likedUsers: 1,
+            storedUsers: 1,
+          },
+        },
+        { $sort: { createdAt: -1 } },
+      ])
+      .toArray();
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
 export const albumnWorkoutModal = {
   ALBUM_WORKOUT_COLLECTION_NAME,
   createNew,
@@ -444,4 +707,6 @@ export const albumnWorkoutModal = {
   updateAlbum,
   deleteAlbum,
   updateDetails,
+  getAlbumWorkoutsAdmin,
+  getAllPublicAlbumWorkoutsByUserId,
 };
