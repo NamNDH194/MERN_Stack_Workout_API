@@ -28,8 +28,35 @@ const getUserById = async (req, res, next) => {
   }
 };
 
+const updateUser = async (req, res, next) => {
+  try {
+    const accountUpdated = await userService.updateUser(
+      req.params.userId,
+      req.body
+    );
+    res.status(StatusCodes.OK).json(accountUpdated);
+  } catch (error) {
+    // console.log(error);
+    next(error);
+  }
+};
+
+const changePassword = async (req, res, next) => {
+  try {
+    const account = await userService.changePassword(
+      req.params.userId,
+      req.body
+    );
+    res.status(StatusCodes.OK).json(account);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const userController = {
   signup,
   login,
   getUserById,
+  updateUser,
+  changePassword,
 };

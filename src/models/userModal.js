@@ -19,8 +19,9 @@ const USER_COLLECTION_SCHEMA = Joi.object({
     .pattern(PASSWORD_RULE)
     .message(PASSWORD_RULE_MESSAGE),
   avatarImg: Joi.string().min(1).default(null),
-  images: Joi.array().items(Joi.string().min(1)).default([]),
-  videos: Joi.array().items(Joi.string().min(1)).default([]),
+  imgPublicId: Joi.string().min(1).default(null),
+  // images: Joi.array().items(Joi.string().min(1)).default([]),
+  // videos: Joi.array().items(Joi.string().min(1)).default([]),
   created: Joi.date().timestamp().default(Date.now),
   updated: Joi.date().timestamp().default(null),
   // albumWorkoutIds: Joi.array()
@@ -77,6 +78,7 @@ const findAccount = async (reqBody) => {
         _id: account._id,
         email: account.email,
         userName: account.userName,
+        avatarImg: account.avatarImg,
       };
       return result;
     } else {
@@ -104,9 +106,64 @@ const findOneByIdProfile = async (id) => {
       .collection(USER_COLLECTION_NAME)
       .findOne(
         { _id: new ObjectId(id) },
-        { projection: { _id: 1, userName: 1, avatarImg: 1, created: 1 } }
+        {
+          projection: {
+            _id: 1,
+            userName: 1,
+            avatarImg: 1,
+            imgPublicId: 1,
+            created: 1,
+          },
+        }
       );
     return account;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const updateUser = async (userId, reqBody) => {
+  try {
+    if (reqBody.oldImgPublicId) {
+      delete reqBody.oldImgPublicId;
+    }
+    reqBody.updatedAt = Date.now();
+    const result = await GET_DB()
+      .collection(USER_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(userId) },
+        { $set: reqBody },
+        {
+          returnDocument: "after",
+          projection: {
+            _id: 1,
+            userName: 1,
+            avatarImg: 1,
+            imgPublicId: 1,
+            created: 1,
+          },
+        }
+      );
+    return result;
+  } catch (error) {
+    throw new Error(error);
+  }
+};
+
+const changePassword = async (userId, reqBody) => {
+  try {
+    const hash = await argon2.hash(reqBody.newPassword, {
+      type: argon2.argon2id,
+    });
+    const hasedPassword = hash;
+    const result = await GET_DB()
+      .collection(USER_COLLECTION_NAME)
+      .findOneAndUpdate(
+        { _id: new ObjectId(userId) },
+        { $set: { password: hasedPassword } },
+        { returnDocument: "after" }
+      );
+    return result;
   } catch (error) {
     throw new Error(error);
   }
@@ -119,4 +176,6 @@ export const userModal = {
   findAccount,
   findOneById,
   findOneByIdProfile,
+  updateUser,
+  changePassword,
 };

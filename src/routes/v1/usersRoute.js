@@ -11,9 +11,13 @@ Route.route("/login").post(userController.login);
 
 Route.use(authMiddleware);
 
-Route.route("/:userId").get(
-  userValidation.getUserById,
-  userController.getUserById
+Route.route("/:userId")
+  .get(userValidation.getUserById, userController.getUserById)
+  .put(userValidation.updateUser, userController.updateUser);
+
+Route.route("/:userId/changePassword").put(
+  userValidation.changePassword,
+  userController.changePassword
 );
 
 export const usersRoute = Route;
