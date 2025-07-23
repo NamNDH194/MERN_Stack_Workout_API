@@ -19,9 +19,15 @@ const START_SERVER = () => {
   const hostname = env.APP_HOST;
   const port = env.APP_PORT;
 
-  app.listen(port, hostname, () => {
-    console.log(`Hi Nam, server is running at ${hostname}:${port}/`);
-  });
+  if (env.BUILD_MODE === "production") {
+    app.listen(process.env.PORT, () => {
+      console.log(`Hi Nam, server is running at ${process.env.PORT}`);
+    });
+  } else {
+    app.listen(port, hostname, () => {
+      console.log(`Hi Nam, server is running at ${hostname}:${port}/`);
+    });
+  }
 
   exitHook(() => {
     console.log("Exit App!");
